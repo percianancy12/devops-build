@@ -1,14 +1,11 @@
 #!/bin/bash
 ENV=$1
 
-docker stop my-react-$ENV || true
-docker rm my-react-$ENV || true
+# Stop & remove any old container
+docker stop my-react-dev || true
+docker rm my-react-dev || true
+docker stop my-react-prod || true
+docker rm my-react-prod || true
 
-if [ "$ENV" == "dev" ]; then
-  ENVIRONMENT=dev docker-compose up -d --build
-elif [ "$ENV" == "prod" ]; then
-  ENVIRONMENT=prod docker-compose up -d --build
-else
-  echo "Unknown environment: $ENV"
-  exit 1
-fi
+# Run new container with docker-compose
+ENVIRONMENT=$ENV docker-compose up -d --build
