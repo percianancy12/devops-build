@@ -15,18 +15,23 @@ pipeline {
     stage('Push to DockerHub') {
       steps {
         script {
-          if (env.BRANCH_NAME == 'dev') {
+          // Detect branch name from GIT_BRANCH (e.g., "origin/dev" or "origin/main")
+          def branch = env.GIT_BRANCH?.replaceFirst(/^origin\//, '')
+
+          if (branch == 'dev') {
             sh """
               echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin
               docker tag react-app:latest percianancy/dev:latest
               docker push percianancy/dev:latest
             """
-          } else if (env.BRANCH_NAME == 'main') {
+          } else if (branch == 'main') {
             sh """
               echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin
               docker tag react-app:latest percianancy/prod:latest
               docker push percianancy/prod:latest
             """
+          } else {
+            echo "Branch ${branch} not handled"
           }
         }
       }
@@ -35,10 +40,14 @@ pipeline {
     stage('Deploy') {
       steps {
         script {
-          if (env.BRANCH_NAME == 'dev') {
+          def branch = env.GIT_BRANCH?.replaceFirst(/^origin\//, '')
+
+          if (branch == 'dev') {
             sh 'bash deploy.sh dev'
-          } else if (env.BRANCH_NAME == 'main') {
+          } else if (branch == 'main') {
             sh 'bash deploy.sh prod'
+          } else {
+            echo "Branch ${branch} not handled"
           }
         }
       }
