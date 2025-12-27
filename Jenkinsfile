@@ -5,10 +5,6 @@ pipeline {
     DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
   }
 
-  parameters {
-    choice(name: 'ENVIRONMENT', choices: ['dev', 'prod'], description: 'Select environment to deploy')
-  }
-
   stages {
     stage('Build Docker Image') {
       steps {
@@ -19,15 +15,15 @@ pipeline {
     stage('Push to DockerHub') {
       steps {
         script {
-          if (params.ENVIRONMENT == 'dev') {
+          if (env.BRANCH_NAME == 'dev') {
             sh """
-              docker login -u ${DOCKERHUB_CREDENTIALS_USR} -p ${DOCKERHUB_CREDENTIALS_PSW}
+              echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin
               docker tag react-app:latest percianancy/dev:latest
               docker push percianancy/dev:latest
             """
-          } else {
+          } else if (env.BRANCH_NAME == 'main') {
             sh """
-              docker login -u ${DOCKERHUB_CREDENTIALS_USR} -p ${DOCKERHUB_CREDENTIALS_PSW}
+              echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin
               docker tag react-app:latest percianancy/prod:latest
               docker push percianancy/prod:latest
             """
@@ -39,9 +35,9 @@ pipeline {
     stage('Deploy') {
       steps {
         script {
-          if (params.ENVIRONMENT == 'dev') {
+          if (env.BRANCH_NAME == 'dev') {
             sh 'bash deploy.sh dev'
-          } else {
+          } else if (env.BRANCH_NAME == 'main') {
             sh 'bash deploy.sh prod'
           }
         }
