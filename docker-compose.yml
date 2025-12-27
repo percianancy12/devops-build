@@ -1,6 +1,8 @@
 version: "3.8"
 services:
   react-app:
-    build: .
+    image: percianancy/${ENVIRONMENT}:latest
+    container_name: my-react-${ENVIRONMENT}
     ports:
       - "80:80"
+    restart: always
