@@ -1,7 +1,7 @@
 #!/bin/bash
 ENV=$1
 
-# Stop & remove any old container
+# Stop & remove any old container (dev or prod)
 docker stop my-react-dev || true
 docker rm my-react-dev || true
 docker stop my-react-prod || true
